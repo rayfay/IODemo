@@ -1,6 +1,12 @@
 package nio;
 
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
 import java.util.Arrays;
 
 /**
@@ -25,8 +31,35 @@ import java.util.Arrays;
  */
 public class BufferTest {
 	
-	public static void main(String[] args) {
+	public static void main(String[] args) throws Exception {
+		// 使用通道以及缓冲区实现文件的赋值
+		// 1.构建输入输出流
+		FileInputStream is = new FileInputStream("/Users/rayqian/Desktop/a.txt");
+		FileOutputStream os = new FileOutputStream("/Users/rayqian/Desktop/b.txt");
+		// 2.构建通道
+		FileChannel inChannel = is.getChannel();
+		FileChannel outChannel = os.getChannel();
+		
+		// 3.通过缓冲区读写数据
+		ByteBuffer buffer = ByteBuffer.allocate(3);
+		int data = -1;
+		while((data = inChannel.read(buffer))!=-1) {
+			buffer.flip();
+			outChannel.write(buffer);
+			buffer.clear();
+		}
+		inChannel.close();
+		outChannel.close();
+		is.close();
+		os.close();
+		
+	}
+
+	public static void test2() {
 		ByteBuffer buffer = ByteBuffer.allocate(1024);
+		System.out.println(buffer.isDirect());
+		buffer = ByteBuffer.allocateDirect(1024);
+		System.out.println(buffer.isDirect());
 		buffer.put("hello".getBytes());
 		buffer.flip();
 		byte[] dst =new byte[buffer.limit()];
